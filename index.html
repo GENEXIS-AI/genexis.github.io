@@ -216,12 +216,14 @@
         const noDataMessage = document.getElementById('noDataMessage');
         const newsDescription = document.getElementById('newsDescription');
 
-        let currentDate = new Date(); // Initialize date to today
+        let currentDate = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }); // 한국 시간으로 초기화
+        currentDate = new Date(currentDate); // Date 객체로 다시 변환
         let audio = new Audio(); // 오디오 객체 초기화
         let isPlaying = false;
 
         document.addEventListener('DOMContentLoaded', () => {
-            currentDate = new Date(); // Set current date to today's date
+            currentDate = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+            currentDate = new Date(currentDate);
             updateContent(currentDate);
         });
 
