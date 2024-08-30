@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Player</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .player-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            justify-content: space-between;
+        }
+
+        .navbar {
+            background-color: #000;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid #282828;
+        }
+
+        .navbar h1 {
+            font-size: 1.5em;
+            color: #1DB954;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .cd-player {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 8px solid #1DB954;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
+            margin: 20px 0;
+            animation: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cd-player::before {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #121212;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+
+        .cd-player::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #fffa;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+        }
+
+        .rotate {
+            animation: spin 5s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .song-info h2, .song-info p {
+            margin: 5px 0;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .controls button {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+
+        .controls button:hover {
+            color: #1DB954;
+        }
+
+        .footer {
+            background-color: #181818;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #282828;
+        }
+
+        .footer .progress-container {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .footer input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            background-color: #404040;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .footer input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background-color: #1DB954;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .download-btn {
+            color: #1DB954;
+            text-decoration: none;
+            font-size: 1em;
+            margin-top: 10px;
+            border: 1px solid #1DB954;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        .download-btn:hover {
+            background-color: #1DB954;
+            color: #fff;
+        }
+
+        .no-data {
+            color: #ff4d4d;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <!-- Navbar -->
+        <div class="navbar">
+            <h1>오늘의 AI 뉴스</h1>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- CD Player Image -->
+            <div id="cdImage" class="cd-player"></div>
+            <div class="song-info">
+                <h2>AI 뉴스 - <span id="selectedDate"></span></h2>
+                <p id="newsDescription">오늘의 주요 AI 뉴스를 들어보세요!</p>
+            </div>
+            <div class="controls">
+                <button id="prevBtn">&#9664;&#9664;</button>
+                <button id="playBtn">&#9654;</button>
+                <button id="nextBtn">&#9654;&#9654;</button>
+            </div>
+            <!-- Download Button -->
+            <a id="downloadBtn" class="download-btn" href="#" target="_blank">음원 다운로드</a>
+            <p id="noDataMessage" class="no-data" style="display: none;">데이터 없음</p>
+        </div>
+
+        <!-- Footer / Player Controls -->
+        <div class="footer">
+            <div id="currentTime">00:00</div>
+            <div class="progress-container">
+                <input type="range" min="0" max="100" value="0" id="progressBar">
+            </div>
+            <div id="totalTime">00:00</div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Player Controls -->
+    <script>
+        const playBtn = document.getElementById('playBtn');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const totalTimeDisplay = document.getElementById('totalTime');
+        const selectedDateDisplay = document.getElementById('selectedDate');
+        const cdImage = document.getElementById('cdImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const newsDescription = document.getElementById('newsDescription');
+
+        let currentDate = new Date(); // Initialize date to today
+        let audio = new Audio();
+        let isPlaying = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentDate = new Date(); // Set current date to today's date
+            updateContent(currentDate);
+        });
+
+        function getAudioUrl(date) {
+            return `https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3`;
+        }
+
+        function getAudioPageUrl(date) {
+            return `https://github.com/GENEXIS-AI/DailyNews/blob/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3`;
+        }
+
+        function getImageUrl(date) {
+            return `https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.png`;
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        }
+
+        function updateContent(date) {
+            const formattedDate = formatDate(date);
+            updateSelectedDate(formattedDate);
+            updateAudioSource(formattedDate);
+            updateCoverImage(formattedDate);
+            updateDownloadLink(formattedDate);
+        }
+
+        function updateSelectedDate(date) {
+            const [year, month, day] = date.split('-');
+            selectedDateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
+        }
+
+        function updateAudioSource(date) {
+            audio.pause();
+            audio = new Audio(getAudioUrl(date));
+            resetPlayer();
+            audio.onerror = function() {
+                noDataMessage.style.display = 'block';
+                newsDescription.style.display = 'none';
+                totalTimeDisplay.textContent = "00:00";
+                cdImage.classList.remove('rotate');
+            };
+            audio.onloadedmetadata = function() {
+                noDataMessage.style.display = 'none';
+                newsDescription.style.display = 'block';
+                totalTimeDisplay.textContent = formatTime(audio.duration);
+            };
+
+            // Stop rotation when audio ends
+            audio.onended = function() {
+                resetPlayer();
+            };
+        }
+
+        function updateCoverImage(date) {
+            const imageUrl = getImageUrl(date);
+            cdImage.style.backgroundImage = `url(${imageUrl})`;
+            cdImage.style.backgroundColor = '#121212';
+            cdImage.onerror = function() {
+                cdImage.style.backgroundImage = 'url("https://via.placeholder.com/200?text=No+Image")';
+            };
+        }
+
+        function updateDownloadLink(date) {
+            downloadBtn.href = getAudioPageUrl(date); // Change link to GitHub page
+            downloadBtn.target = '_blank'; // Open in new tab
+        }
+
+        playBtn.addEventListener('click', function() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = '&#9654;'; // Play icon
+                cdImage.classList.remove('rotate');
+            } else {
+                audio.play();
+                playBtn.innerHTML = '&#10074;&#10074;'; // Pause icon
+                cdImage.classList.add('rotate');
+            }
+            isPlaying = !isPlaying;
+        });
+
+        audio.addEventListener('timeupdate', function() {
+            if (!isNaN(audio.duration)) {
+                progressBar.value = (audio.currentTime / audio.duration) * 100;
+                currentTimeDisplay.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        progressBar.addEventListener('input', function(e) {
+            audio.currentTime = (e.target.value / 100) * audio.duration;
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateContent(currentDate);
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateContent(currentDate);
+        });
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function resetPlayer() {
+            isPlaying = false;
+            playBtn.innerHTML = '&#9654;'; // Play icon
+            currentTimeDisplay.textContent = '00:00';
+            totalTimeDisplay.textContent = '00:00';
+            progressBar.value = 0;
+            cdImage.classList.remove('rotate');
+        }
+
+        // Initialize content for today's date
+        updateContent(currentDate);
+    </script>
+</body>
+</html>
