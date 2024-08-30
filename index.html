@@ -216,27 +216,25 @@
         const noDataMessage = document.getElementById('noDataMessage');
         const newsDescription = document.getElementById('newsDescription');
 
-        let currentDate = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }); // 한국 시간으로 초기화
-        currentDate = new Date(currentDate); // Date 객체로 다시 변환
+        let currentDate = new Date(); // Initialize date to today
         let audio = new Audio(); // 오디오 객체 초기화
         let isPlaying = false;
 
         document.addEventListener('DOMContentLoaded', () => {
-            currentDate = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-            currentDate = new Date(currentDate);
+            currentDate = new Date(); // Set current date to today's date
             updateContent(currentDate);
         });
 
         function getAudioUrl(date) {
-            return `https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3`;
+            return https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3;
         }
 
         function getAudioPageUrl(date) {
-            return `https://github.com/GENEXIS-AI/DailyNews/blob/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3`;
+            return https://github.com/GENEXIS-AI/DailyNews/blob/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.mp3;
         }
 
         function getImageUrl(date) {
-            return `https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.png`;
+            return https://raw.githubusercontent.com/GENEXIS-AI/DailyNews/main/%EC%98%A4%EB%94%94%EC%98%A4/${date}.png;
         }
 
         function formatDate(date) {
@@ -253,7 +251,7 @@
 
         function updateSelectedDate(date) {
             const [year, month, day] = date.split('-');
-            selectedDateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
+            selectedDateDisplay.textContent = ${year}년 ${month}월 ${day}일;
         }
 
         function updateAudioSource(date) {
@@ -281,7 +279,7 @@
 
         function updateCoverImage(date) {
             const imageUrl = getImageUrl(date);
-            cdImage.style.backgroundImage = `url(${imageUrl})`;
+            cdImage.style.backgroundImage = url(${imageUrl});
             cdImage.style.backgroundColor = '#121212';
             cdImage.onerror = function() {
                 cdImage.style.backgroundImage = 'url("https://via.placeholder.com/200?text=No+Image")';
@@ -332,7 +330,7 @@
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
-            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            return ${minutes}:${secs < 10 ? '0' : ''}${secs};
         }
 
         function resetPlayer() {
